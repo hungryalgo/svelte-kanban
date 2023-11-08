@@ -1,142 +1,118 @@
-<script>
-	import { fly, fade } from 'svelte/transition';
-	import db from './db';
+<script lang='ts'>
+	import { Auth } from '@supabase/auth-ui-svelte';
+	import { supabaseClient } from './db';
+	import { ThemeSupa, type SocialLayout, type ViewType } from '@supabase/auth-ui-shared';
+	// import { ThemeSupa } from '@supabase/auth-ui-shared';
 
-	let email,
-		sent = false;
+	const classes: { [key: string]: string } = {
+		'rgb(106, 10, 119)': 'container-royalpurpleshadow',
+		'rgb(255, 215, 0)': 'container-goldshadow',
+		'rgb(76, 12, 75)': 'container-darkpurpleshadow',
+		'rgb(128, 128, 128)': 'container-neutralgrayshadow'
+	};
 
-	async function submit() {
-		await db.signIn(email);
-		sent = true;
-	}
+	const colors = [
+		'rgb(106, 10, 119)',
+		'rgb(255, 215, 0)',
+		'rgb(76, 12, 75)',
+		'rgb(128, 128, 128)'
+	] as const;
 
-	function focus(element) {
-		element.focus();
-	}
+	const socialAlignments = ['horizontal', 'vertical'] as const;
+
+	const radii = ['5px', '10px', '20px'] as const;
+
+	const views: { id: ViewType; title: string }[] = [
+	// const views: { id: any; title: string }[] = [
+		{ id: 'sign_in', title: 'Sign In' },
+		{ id: 'sign_up', title: 'Sign Up' },
+		{ id: 'magic_link', title: 'Magic Link' },
+		{ id: 'forgotten_password', title: 'Forgotten Password' },
+		{ id: 'update_password', title: 'Update Password' },
+		{ id: 'verify_otp', title: 'Verify Otp' }
+	];
+
+	let brandColor = colors[0];
+	let socialLayout = socialAlignments[0] satisfies SocialLayout;
+	// let socialLayout = socialAlignments[0];
+	let borderRadius = radii[0];
+	let view = views[0];
 </script>
 
 <svelte:head>
-	<title>Kanban</title>
+	<title>Auth UI Svelte</title>
 </svelte:head>
 
-<div class="wrapper">
-	{#if sent}
-		<div class="container">
-			<div in:fly class="notification">
-				<svg
-					class="icon"
-					height="32"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-					/>
-				</svg>
-				<h2>Sent you a link, check your email</h2>
+<div class="dark:bg-scale-200 bg-scale-100 relative py-2 pb-16">
+	<div
+		class="sm:py-18 gap container relative mx-auto grid grid-cols-12 px-6 py-16 md:gap-16 md:py-24 lg:gap-16 lg:px-16 lg:py-24 xl:px-20"
+	>
+		<div class="relative col-span-12 mb-16 md:col-span-7 md:mb-0 lg:col-span-6">
+			<div class="relative lg:mx-auto lg:max-w-md bg-zinc-900">
+				<div class={classes[brandColor]}>
+					<div class="border-scale-400 bg-scale-300 relative rounded-xl px-8 py-12 drop-shadow-sm">
+						<div class="mb-6 flex flex-col gap-6">
+							<div class="flex items-center gap-3">
+								<h1 class="text-scale-1200 text-2xl">hexbot chat</h1>
+							</div>
+							<p class="text-scale-1100 text-auth-widget-test">Sign in to use hexbot chat</p>
+						</div>
+						<Auth
+							{supabaseClient}
+							theme="dark"
+							view={view.id}
+							appearance={{
+								theme: ThemeSupa,
+								style: {
+									button: `border-radius: ${borderRadius}; border-color: rgba(0,0,0,0);`
+								},
+								variables: {
+									default: {
+										colors: {
+											brand: brandColor,
+											brandAccent: `gray`
+										},
+										radii: {
+											borderRadiusButton: borderRadius,
+											buttonBorderRadius: borderRadius,
+											inputBorderRadius: borderRadius
+										}
+									}
+								}
+							}}
+							providers={['apple', 'google', 'github']}
+							{socialLayout}
+						/>
+					</div>
+				</div>
 			</div>
 		</div>
-	{:else}
-		<div class="container" in:fade>
-			<h1>Sign in</h1>
-
-			<form on:submit|preventDefault={submit}>
-				<label>
-					<span>E-mail Address</span>
-					<input name="email" type="email" required bind:value={email} use:focus />
-				</label>
-				<button>
-					<svg
-						class="icon"
-						height="24"
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-						/>
-					</svg>
-					<span>Send me a magic link</span>
-				</button>
-			</form>
-		</div>
-	{/if}
+	</div>
 </div>
 
+
 <style>
-	.wrapper {
-		display: flex;
-		justify-content: center;
-		place-items: center;
-		height: 100vh;
-		width: 100vw;
-	}
-	.container {
-		display: flex;
-		flex-direction: column;
-		min-width: 400px;
-		padding: 4rem;
-		background: #0005;
-		border-radius: 3px;
+	.container-royalpurpleshadow {
+		min-width: 364px;
+		box-shadow: -2px 1px 69px 5px rgb(106, 10, 119);
+		border-radius: 1rem;
 	}
 
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
+	.container-goldshadow {
+		min-width: 364px;
+		box-shadow: -2px 1px 69px 5px rgb(255, 215, 0);
+		border-radius: 1rem;
 	}
 
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
+	.container-darkpurpleshadow {
+		min-width: 364px;
+		box-shadow: -2px 1px 69px 5px rgb(76, 12, 75);
+		border-radius: 1rem;
 	}
 
-	h1,
-	h2 {
-		color: white;
-	}
-
-	h1 {
-		margin-top: 0;
-	}
-
-	label span {
-		color: white;
-	}
-
-	input {
-		display: block;
-		width: 100%;
-	}
-
-	button {
-		background: white;
-		padding: 1rem;
-		border-radius: 3px;
-		background: #4dc7dc;
-		font-size: 0.9rem;
-		color: #444;
-	}
-
-	.icon {
-		vertical-align: middle;
-	}
-
-	.notification {
-		display: flex;
-		place-items: center;
-		gap: 16px;
-		color: white;
+	.container-neutralgrayshadow {
+		min-width: 364px;
+		box-shadow: -2px 1px 69px 5px rgb(128, 128, 128);
+		border-radius: 1rem;
 	}
 </style>

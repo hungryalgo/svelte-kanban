@@ -1,5 +1,5 @@
 <script>
-	import db from './db';
+	import db from './dbOriginal';
 	import gravatarUrl from 'gravatar-url';
 	import { goto } from '$app/navigation';
 
